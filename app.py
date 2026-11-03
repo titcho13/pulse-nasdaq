@@ -1,11 +1,19 @@
 import streamlit as st
 from datetime import datetime
+from streamlit_autorefresh import st_autorefresh
 from signal_engine import get_signal
 
 st.set_page_config(
     page_title="Pulse Nasdaq",
     page_icon="📈",
     layout="wide"
+)
+
+# Rafraîchissement automatique 15 sec
+
+st_autorefresh(
+    interval=15000,
+    key="pulse_refresh"
 )
 
 data = get_signal()
@@ -21,7 +29,7 @@ expire = data["expire"]
 
 st.title("📈 PULSE NASDAQ")
 
-# SIGNAL PRINCIPAL
+# SIGNAL
 
 if signal == "ACHAT PRIORITAIRE":
 
@@ -43,7 +51,7 @@ else:
 
     st.info("⚪ MARCHÉ NEUTRE")
 
-# KPIs
+# KPI
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -66,15 +74,19 @@ st.subheader("Force du signal")
 st.progress(score / 100)
 
 if score >= 85:
+
     st.success("🔥 SIGNAL EXCEPTIONNEL")
 
 elif score >= 70:
+
     st.success("✅ SIGNAL FORT")
 
 elif score >= 50:
+
     st.warning("⚠️ SIGNAL NORMAL")
 
 else:
+
     st.error("❌ SIGNAL FAIBLE")
 
 # VALIDATION
@@ -100,10 +112,16 @@ if signal != "AUCUN SIGNAL":
 c1, c2 = st.columns(2)
 
 with c1:
-    st.metric("Z-Score 15 min", z15)
+    st.metric(
+        "Z-Score 15 min",
+        z15
+    )
 
 with c2:
-    st.metric("Z-Score 5 min", z5)
+    st.metric(
+        "Z-Score 5 min",
+        z5
+    )
 
 # CHECKLIST
 
@@ -195,7 +213,7 @@ else:
         "Aucune anomalie détectée."
     )
 
-# DEBUG
+# DONNÉES TECHNIQUES
 
 st.divider()
 

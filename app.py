@@ -8,10 +8,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# =====================
-# DONNÉES
-# =====================
-
 data = get_signal()
 
 signal = data["signal"]
@@ -33,15 +29,23 @@ st.title("📈 PULSE NASDAQ")
 
 if signal == "ACHAT PRIORITAIRE":
 
-    st.success(f"🟢 {signal}")
+    st.success("🟢 ACHAT PRIORITAIRE")
 
 elif signal == "VENTE PRIORITAIRE":
 
-    st.error(f"🔴 {signal}")
+    st.error("🔴 VENTE PRIORITAIRE")
+
+elif z15 > 1:
+
+    st.warning("🟠 SURVEILLANCE ACHAT")
+
+elif z15 < -1:
+
+    st.warning("🟠 SURVEILLANCE VENTE")
 
 else:
 
-    st.warning("🟡 AUCUN SIGNAL")
+    st.info("⚪ MARCHÉ NEUTRE")
 
 # =====================
 # KPIs
@@ -68,7 +72,7 @@ with col3:
     )
 
 # =====================
-# BARRE DE FORCE
+# SCORE
 # =====================
 
 st.subheader("Force du signal")
@@ -102,21 +106,97 @@ st.subheader("Validation 15 min → 5 min")
 c1, c2 = st.columns(2)
 
 with c1:
-
     st.metric(
         "Z-Score 15 min",
         z15
     )
 
 with c2:
-
     st.metric(
         "Z-Score 5 min",
         z5
     )
 
 # =====================
-# INTERPRÉTATION
+# CHECKLIST SETUP
+# =====================
+
+st.divider()
+
+st.subheader("🎯 État du setup")
+
+critere_z15_achat = z15 >= 2
+critere_z15_vente = z15 <= -2
+
+critere_z5_achat = z5 >= 1.5
+critere_z5_vente = z5 <= -1.5
+
+if signal == "ACHAT PRIORITAIRE" or z15 > 0:
+
+    st.write(
+        f"{'✅' if critere_z15_achat else '⬜'} Z15 > 2"
+    )
+
+    st.write(
+        f"{'✅' if critere_z5_achat else '⬜'} Z5 > 1.5"
+    )
+
+else:
+
+    st.write(
+        f"{'✅' if critere_z15_vente else '⬜'} Z15 < -2"
+    )
+
+    st.write(
+        f"{'✅' if critere_z5_vente else '⬜'} Z5 < -1.5"
+    )
+
+# =====================
+# CE QUI ME FERA ACHETER
+# =====================
+
+st.divider()
+
+st.subheader("🟢 Ce qui me fera acheter")
+
+if critere_z15_achat:
+    st.success("✅ Impulsion 15 min validée")
+else:
+    st.warning(
+        f"Manque encore {round(2-z15,2)} de Z15"
+    )
+
+if critere_z5_achat:
+    st.success("✅ Confirmation 5 min validée")
+else:
+    st.warning(
+        f"Manque encore {round(1.5-z5,2)} de Z5"
+    )
+
+# =====================
+# CE QUI ME FERA VENDRE
+# =====================
+
+st.divider()
+
+st.subheader("🔴 Ce qui me fera vendre")
+
+if critere_z15_vente:
+    st.success("✅ Impulsion baissière 15 min validée")
+else:
+    st.warning(
+        f"Manque encore {round(abs(-2-z15),2)}"
+    )
+
+if critere_z5_vente:
+    st.success("✅ Confirmation baissière 5 min validée")
+else:
+    st.warning(
+        f"Manque encore {round(abs(-1.5-z5),2)}"
+    )
+
+# =====================
+# DIAGNOSTIC
 # =====================
 
 st.divider()
@@ -126,13 +206,19 @@ st.subheader("Diagnostic")
 if signal == "ACHAT PRIORITAIRE":
 
     st.success(
-        "Le moteur détecte un contexte acheteur."
+        "Les conditions d'achat sont réunies."
     )
 
 elif signal == "VENTE PRIORITAIRE":
 
     st.error(
-        "Le moteur détecte un contexte vendeur."
+        "Les conditions de vente sont réunies."
+    )
+
+elif abs(z15) > 1:
+
+    st.warning(
+        "Le marché entre dans une zone de surveillance."
     )
 
 else:
@@ -142,49 +228,14 @@ else:
     )
 
 # =====================
-# QUALITÉ
-# =====================
-
-if qualite == "PREMIUM":
-
-    st.success(
-        "🔥 Validation rapide du signal 15 min par le 5 min."
-    )
-
-elif qualite == "NORMAL":
-
-    st.info(
-        "✅ Signal validé mais avec une puissance modérée."
-    )
-
-elif qualite == "TARDIF":
-
-    st.warning(
-        "⚠️ Validation tardive."
-    )
-
-elif qualite == "EN ATTENTE":
-
-    st.warning(
-        "⏳ Signal 15 min détecté mais pas encore validé par le 5 min."
-    )
-
-# =====================
-# DONNÉES TECHNIQUES
+# DONNÉES
 # =====================
 
 st.divider()
 
 with st.expander("Données techniques"):
 
-    st.write({
-        "Signal": signal,
-        "Qualité": qualite,
-        "Prix": prix,
-        "Z15": z15,
-        "Z5": z5,
-        "Score": score
-    })
+    st.json(data)
 
 # =====================
 # PIED DE PAGE

@@ -8,7 +8,11 @@ st.set_page_config(
     layout="wide"
 )
 
-signal, prix = get_signal()
+data = get_signal()
+
+signal = data["signal"]
+prix = data["prix"]
+score = data["score"]
 
 st.title("📈 PULSE NASDAQ")
 
@@ -28,60 +32,37 @@ with col1:
 with col2:
     st.metric(
         "Prix Nasdaq",
-        f"{prix}"
+        prix
     )
 
 with col3:
     st.metric(
-        "Dernière mise à jour",
-        datetime.now().strftime("%H:%M:%S")
+        "Score Pulse",
+        f"{score}/100"
     )
 
-st.divider()
+st.progress(score / 100)
 
-st.subheader("Signal actuel")
+if score >= 85:
+    st.success("🔥 SIGNAL EXCEPTIONNEL")
 
-if signal == "ACHAT":
-    st.success(
-        "Le moteur détecte actuellement un contexte acheteur."
-    )
+elif score >= 70:
+    st.info("✅ SIGNAL FORT")
 
-elif signal == "VENTE":
-    st.error(
-        "Le moteur détecte actuellement un contexte vendeur."
-    )
+elif score >= 50:
+    st.warning("⚠️ SIGNAL NORMAL")
 
 else:
-    st.info(
-        "Aucun signal exploitable."
-    )
+    st.error("❌ SIGNAL FAIBLE")
+
+st.subheader("Analyse")
+
+st.write(f"Signal actuel : **{signal}**")
+st.write(f"Prix actuel : **{prix}**")
+st.write(f"Force du signal : **{score}/100**")
 
 st.divider()
 
-st.subheader("Évolution future")
-
-st.info(
-    """
-    Version 2 :
-
-    ✅ Signaux 15 min
-
-    ✅ Confirmation 5 min
-
-    ✅ PREMIUM
-
-    ✅ NORMAL
-
-    ✅ TARDIF
-
-    ✅ Compte à rebours
-
-    ✅ Historique SQLite
-
-    ✅ Alertes Telegram
-    """
-)
-
 st.caption(
-    f"Mis à jour le {datetime.now().strftime('%d/%m/%Y à %H:%M:%S')}"
+    f"Dernière mise à jour : {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
 )

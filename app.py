@@ -1,3 +1,39 @@
+
+import streamlit as st
+from datetime import datetime
+from streamlit_autorefresh import st_autorefresh
+from signal_engine import get_signal
+
+# =====================
+# PROTECTION PAR MOT DE PASSE
+# =====================
+
+MOT_DE_PASSE = "NASDAQ2026!"
+
+if "auth" not in st.session_state:
+    st.session_state.auth = False
+
+if not st.session_state.auth:
+
+    st.title("🔒 Pulse Nasdaq")
+
+    mdp = st.text_input(
+        "Code d'accès",
+        type="password"
+    )
+
+    if st.button("Connexion"):
+
+        if mdp == MOT_DE_PASSE:
+
+            st.session_state.auth = True
+            st.rerun()
+
+        else:
+
+            st.error("Mot de passe incorrect")
+
+    st.stop()
 import streamlit as st
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh

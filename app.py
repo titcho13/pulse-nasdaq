@@ -1,11 +1,20 @@
-
 import streamlit as st
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
 from signal_engine import get_signal
 
 # =====================
-# PROTECTION PAR MOT DE PASSE
+# CONFIGURATION
+# =====================
+
+st.set_page_config(
+    page_title="Pulse Nasdaq",
+    page_icon="📈",
+    layout="wide"
+)
+
+# =====================
+# MOT DE PASSE
 # =====================
 
 MOT_DE_PASSE = "NASDAQ2026!"
@@ -34,18 +43,19 @@ if not st.session_state.auth:
             st.error("Mot de passe incorrect")
 
     st.stop()
-import streamlit as st
-from datetime import datetime
-from streamlit_autorefresh import st_autorefresh
-from signal_engine import get_signal
 
-st.set_page_config(
-    page_title="Pulse Nasdaq",
-    page_icon="📈",
-    layout="wide"
+# =====================
+# RAFRAÎCHISSEMENT
+# =====================
+
+st_autorefresh(
+    interval=15000,
+    key="pulse_refresh"
 )
 
-
+# =====================
+# DONNÉES
+# =====================
 
 data = get_signal()
 
@@ -58,9 +68,15 @@ score = data["score"]
 chrono = data["chrono"]
 expire = data["expire"]
 
+# =====================
+# TITRE
+# =====================
+
 st.title("📈 PULSE NASDAQ")
 
-# SIGNAL
+# =====================
+# SIGNAL PRINCIPAL
+# =====================
 
 if signal == "ACHAT PRIORITAIRE":
 
@@ -82,7 +98,9 @@ else:
 
     st.info("⚪ MARCHÉ NEUTRE")
 
-# KPI
+# =====================
+# KPIs
+# =====================
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -98,7 +116,9 @@ with col3:
 with col4:
     st.metric("Chrono", chrono)
 
-# FORCE
+# =====================
+# SCORE
+# =====================
 
 st.subheader("Force du signal")
 
@@ -120,7 +140,9 @@ else:
 
     st.error("❌ SIGNAL FAIBLE")
 
+# =====================
 # VALIDATION
+# =====================
 
 st.divider()
 
@@ -154,7 +176,9 @@ with c2:
         z5
     )
 
+# =====================
 # CHECKLIST
+# =====================
 
 st.divider()
 
@@ -186,7 +210,9 @@ else:
         f"{'✅' if vente5 else '⬜'} Confirmation 5 min"
     )
 
+# =====================
 # CE QUI ME FERA ACHETER
+# =====================
 
 st.divider()
 
@@ -200,7 +226,9 @@ st.write(
     f"{'✅' if achat5 else '⬜'} Z5 > 1.5"
 )
 
+# =====================
 # CE QUI ME FERA VENDRE
+# =====================
 
 st.divider()
 
@@ -214,7 +242,9 @@ st.write(
     f"{'✅' if vente5 else '⬜'} Z5 < -1.5"
 )
 
+# =====================
 # DIAGNOSTIC
+# =====================
 
 st.divider()
 
@@ -244,7 +274,9 @@ else:
         "Aucune anomalie détectée."
     )
 
+# =====================
 # DONNÉES TECHNIQUES
+# =====================
 
 st.divider()
 
@@ -252,7 +284,9 @@ with st.expander("Données techniques"):
 
     st.json(data)
 
-# FOOTER
+# =====================
+# PIED DE PAGE
+# =====================
 
 st.divider()
 

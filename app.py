@@ -13,36 +13,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# =====================
-# MOT DE PASSE
-# =====================
-
-MOT_DE_PASSE = "NASDAQ2026!"
-
-if "auth" not in st.session_state:
-    st.session_state.auth = False
-
-if not st.session_state.auth:
-
-    st.title("🔒 Pulse Nasdaq")
-
-    mdp = st.text_input(
-        "Code d'accès",
-        type="password"
-    )
-
-    if st.button("Connexion"):
-
-        if mdp == MOT_DE_PASSE:
-
-            st.session_state.auth = True
-            st.rerun()
-
-        else:
-
-            st.error("Mot de passe incorrect")
-
-    st.stop()
 
 # =====================
 # RAFRAÎCHISSEMENT

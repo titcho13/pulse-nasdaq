@@ -1,6 +1,7 @@
 import pandas as pd
 import yfinance as yf
 
+
 def get_signal():
 
     df = yf.download(
@@ -23,4 +24,6 @@ def get_signal():
     else:
         signal = "VENTE"
 
-    return signal, round(float(dernier["Close"]), 2)
+    prix = round(float(dernier["Close"]), 2)
+
+    return signal, prix

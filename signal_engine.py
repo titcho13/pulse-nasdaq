@@ -67,7 +67,6 @@ def get_signal():
     try:
 
         df5 = telecharger_donnees()
-
         df15 = construire_15m(df5)
 
         df5 = calcul_zscore(df5, 200)
@@ -157,7 +156,6 @@ def get_signal():
             )
 
             if restant <= 0:
-
                 restant = 0
                 expire = True
 

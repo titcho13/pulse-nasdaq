@@ -1,58 +1,112 @@
 import pandas as pd
-import yfinance as yf
 import numpy as np
+import yfinance as yf
+
+SYMBOLE = "NQ=F"
+
+SEUIL_15M = 2.0
+SEUIL_5M = 1.5
 
 
 def get_signal():
 
-    df = yf.download(
-        "NQ=F",
-        period="10d",
+    df5 = yf.download(
+        SYMBOLE,
+        period="20d",
         interval="5m",
         progress=False
     )
 
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = df.columns.get_level_values(0)
+    if isinstance(df5.columns, pd.MultiIndex):
+        df5.columns = df5.columns.get_level_values(0)
 
-    df["ema20"] = df["Close"].ewm(span=20).mean()
-    df["ema50"] = df["Close"].ewm(span=50).mean()
+    df5 = df5.rename(columns=str.lower)
 
-    df["momentum"] = df["Close"].pct_change(3)
+    df15 = df5.resample("15min").agg({
+        "open": "first",
+        "high": "max",
+        "low": "min",
+        "close": "last",
+        "volume": "sum"
+    }).dropna()
 
-    vol_med = df["Volume"].rolling(50).median()
-    df["ratio_vol"] = df["Volume"] / vol_med
+    # --------- SIGNAL 15M ---------
 
-    dernier = df.iloc[-1]
+    df15["ret"] = df15["close"].pct_change()
 
-    signal = "NEUTRE"
+    scale15 = (
+        1.4826
+        * df15["ret"].abs().rolling(100).median()
+    )
 
-    if (
-        dernier["ema20"] > dernier["ema50"]
-        and dernier["momentum"] > 0
-    ):
-        signal = "ACHAT"
+    df15["z"] = df15["ret"] / scale15
 
-    elif (
-        dernier["ema20"] < dernier["ema50"]
-        and dernier["momentum"] < 0
-    ):
-        signal = "VENTE"
+    dernier15 = df15.iloc[-1]
 
-    score = 0
+    sens15 = 0
 
-    score += min(abs(dernier["momentum"]) * 10000, 40)
-    score += min(dernier["ratio_vol"] * 15, 30)
+    if dernier15["z"] >= SEUIL_15M:
+        sens15 = 1
 
-    if signal != "NEUTRE":
-        score += 30
+    elif dernier15["z"] <= -SEUIL_15M:
+        sens15 = -1
 
-    score = min(int(score), 100)
+    # --------- VALIDATION 5M ---------
 
-    prix = round(float(dernier["Close"]), 2)
+    df5["ret"] = df5["close"].pct_change()
+
+    scale5 = (
+        1.4826
+        * df5["ret"].abs().rolling(200).median()
+    )
+
+    df5["z"] = df5["ret"] / scale5
+
+    derniere5 = df5.iloc[-1]
+
+    valid5 = False
+
+    if sens15 == 1 and derniere5["z"] >= SEUIL_5M:
+        valid5 = True
+
+    if sens15 == -1 and derniere5["z"] <= -SEUIL_5M:
+        valid5 = True
+
+    # --------- ETAT ---------
+
+    if sens15 == 1:
+        signal = "ACHAT PRIORITAIRE"
+
+    elif sens15 == -1:
+        signal = "VENTE PRIORITAIRE"
+
+    else:
+        signal = "AUCUN SIGNAL"
+
+    if valid5:
+
+        force = abs(float(derniere5["z"]))
+
+        if force >= 3:
+            qualite = "PREMIUM"
+
+        elif force >= 2:
+            qualite = "NORMAL"
+
+        else:
+            qualite = "TARDIF"
+
+    else:
+
+        if sens15 != 0:
+            qualite = "EN ATTENTE"
+        else:
+            qualite = "-"
 
     return {
         "signal": signal,
-        "prix": prix,
-        "score": score
+        "qualite": qualite,
+        "prix": round(float(df5["close"].iloc[-1]), 2),
+        "z15": round(float(dernier15["z"]), 2),
+        "z5": round(float(derniere5["z"]), 2)
     }

@@ -45,12 +45,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Rafraîchissement automatique 15 sec
 
-st_autorefresh(
-    interval=15000,
-    key="pulse_refresh"
-)
 
 data = get_signal()
 
